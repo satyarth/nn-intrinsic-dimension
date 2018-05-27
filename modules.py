@@ -48,6 +48,10 @@ class LinearRP(nn.Module):
         
         self.theta_0_b = nn.Parameter(torch.randn(out_features), requires_grad=False)
         self.proj_b = nn.Parameter(torch.randn(out_features, d), requires_grad=False)
+
+        for projection_matrix in [self.proj, self.proj_b]:
+        	norm = torch.norm(projection_matrix, dim=1)[:, None].expand_as(projection_matrix)
+        	projection_matrix = torch.div(projection_matrix, norm)
         
         self.in_features = in_features
         self.out_features = out_features
