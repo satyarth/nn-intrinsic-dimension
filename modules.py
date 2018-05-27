@@ -11,7 +11,7 @@ class Flatten(nn.Module):
         return input.view(input.size(0), -1)
 
 class LinearRP(nn.Module):
-	# Commented stuff fron original linear layer for now
+    # Commented stuff fron original linear layer for now
     r"""Applies a linear transformation to the incoming data: :math:`y = Ax + b`
 
     Args:
@@ -43,16 +43,17 @@ class LinearRP(nn.Module):
         super(LinearRP, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
+        
         self.theta_0 = nn.Parameter(torch.randn(out_features, in_features), requires_grad=False)
-        self.proj = nn.Parameter(torch.randn(out_features*in_features, d), requires_grad=False)
+        proj = torch.randn(out_features*in_features, d)
+        proj = torch.div(proj,torch.norm(proj, p=2.,dim=0))
+        self.proj = nn.Parameter(proj, requires_grad=False)
         
         self.theta_0_b = nn.Parameter(torch.randn(out_features), requires_grad=False)
-        self.proj_b = nn.Parameter(torch.randn(out_features, d), requires_grad=False)
-
-        for projection_matrix in [self.proj, self.proj_b]:
-        	norm = torch.norm(projection_matrix, dim=1)[:, None].expand_as(projection_matrix)
-        	projection_matrix = torch.div(projection_matrix, norm)
-        
+        proj_b = torch.randn(out_features, d)
+        proj_b = torch.div(proj_b,torch.norm(proj_b,p=2., dim=0))
+        self.proj_b = nn.Parameter(proj_b, requires_grad=False)
+            
         self.in_features = in_features
         self.out_features = out_features
 #         self.weight = nn.Parameter(torch.Tensor(out_features, in_features))
