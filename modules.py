@@ -84,3 +84,56 @@ class LinearRP(nn.Module):
         return 'in_features={}, out_features={}, bias={}'.format(
             self.in_features, self.out_features, self.bias is not None
         )
+    
+class Conv2dRP(nn.Module):
+    def __init__(self, in_channels, out_channels, 
+                 kernel_size, 
+                 stride=1, 
+                 padding=0, 
+                 dilation=1, 
+                 groups=1, 
+                 bias=True, 
+                 d=None):
+        super(Conv2dRP, self).__init__()
+        
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.padding = padding
+        self.dilation = dilation
+        self.groups = groups
+        self.bias = bias
+        self.d = d
+        
+        #init filter weights & its projection matrix
+        theta_0_w = torch.randn(out_channels, in_channels, kernel_size, kernel_size)
+        self.theta_0_w = nn.Parameter(theta_0_w, requires_grad=False)
+        
+        Proj_w = torch.rand(out_channels*in_channels*kernel_size*kernel_size, d)
+        Proj_w = torch.div(Proj_w,torch.norm(Proj_w, p=2.,dim=0))
+        self.Proj_w = nn.Parameter(Proj_w, requires_grad=False)
+        
+        #init filter biases & its projection matrix
+        if bias:
+            theta_0_b = torch.randn(out_channels)
+            self.theta_0_b = nn.Parameter(theta_0_b, requires_grad=False)
+
+            Proj_b = torch.rand(out_channels, d)
+            Proj_b = torch.div(Proj_b,torch.norm(Proj_b, p=2.,dim=0))
+            self.Proj_b = nn.Parameter(Proj_b, requires_grad=False)
+        
+    def forward(self, input, basis_weights):
+        theta_off_w = torch.matmul(self.Proj_w, basis_weights)
+        theta_off_w = theta_off_w.resize(self.out_channels, self.in_channels, self.kernel_size, self.kernel_size)
+        Theta_w = self.theta_0_w + theta_off_w
+        
+        if self.bias: #if bias = True
+            theta_off_b = torch.matmul(self.Proj_b, basis_weights)
+            theta_off_b = theta_off_b.resize(self.out_channels)
+            Theta_b = self.theta_0_b + theta_off_b
+        else:
+            Theta_b = None
+            
+        return F.conv2d(input, weight=Theta_w, bias=Theta_b, padding=self.padding, 
+                        dilation=self.dilation, groups = self.groups)
