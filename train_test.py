@@ -120,7 +120,7 @@ def Dgrid_train(network_class, network_args, optimizer_class, optimizer_args,
     
     for i, each_d in tqdm(enumerate(d_range)):
         
-        network_args['d'] = each_d
+        network_args['d'] = int(each_d)
         network_ = network_class(**network_args)
         
         network_grads = [param for param in network_.parameters() if param.requires_grad]
