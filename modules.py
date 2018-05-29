@@ -83,8 +83,7 @@ class LinearRP(nn.Module):
 
     def extra_repr(self):
         return 'in_features={}, out_features={}, bias={}'.format(
-            self.in_features, self.out_features, self.bias is not None
-        )
+            self.in_features, self.out_features, self.theta_0)
     
 class Conv2dRP(nn.Module):
     def __init__(self, in_channels, out_channels, 
@@ -139,6 +138,10 @@ class Conv2dRP(nn.Module):
         return F.conv2d(input, weight=Theta_w, bias=Theta_b, padding=self.padding, 
                         dilation=self.dilation, groups = self.groups)
     
+    def extra_repr(self):
+        return 'in_channels={}, out_channels={}, bias={}'.format(
+            self.in_channels, self.out_channels, self.bias)
+    
 
 class BatchNorm2dRP(nn.Module):
     def __init__(self, num_features, eps=1e-05, momentum=0.1, affine=True, d=None):
@@ -185,3 +188,7 @@ class BatchNorm2dRP(nn.Module):
         
         return F.batch_norm(input, self.running_mean, self.running_var, Theta_w, Theta_b,
             self.training, self.momentum, self.eps)
+    
+    def extra_repr(self):
+        return 'num_features={}, running_mean={}, running_var={}'.format(
+            self.num_features, self.running_mean, self.running_var)
