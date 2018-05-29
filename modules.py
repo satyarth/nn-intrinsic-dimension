@@ -2,6 +2,7 @@ import torch
 from torch import nn as nn
 from torch.nn import functional as F
 from torch.autograd import Variable
+from torch.nn.parameter import Parameter
 
 import math
 
@@ -137,3 +138,50 @@ class Conv2dRP(nn.Module):
             
         return F.conv2d(input, weight=Theta_w, bias=Theta_b, padding=self.padding, 
                         dilation=self.dilation, groups = self.groups)
+    
+
+class BatchNorm2dRP(nn.Module):
+    def __init__(self, num_features, eps=1e-05, momentum=0.1, affine=True, d=None):
+        super(BatchNorm2dRP, self).__init__()
+        
+        self.num_features=num_features
+        self.eps=eps
+        self.momentum=momentum
+        self.affine=affine
+        self.d = d
+        
+        if self.affine:
+            #init filter weights & its projection matrix
+            theta_0_w = torch.randn(self.num_features)
+            self.theta_0_w = nn.Parameter(theta_0_w, requires_grad=False)
+
+            Proj_w = torch.rand(self.num_features, d)
+            Proj_w = torch.div(Proj_w,torch.norm(Proj_w, p=2.,dim=0))
+            self.Proj_w = nn.Parameter(Proj_w, requires_grad=False)
+            
+            #init filter biases & its projection matrix
+            theta_0_b = torch.randn(self.num_features)
+            self.theta_0_b = nn.Parameter(theta_0_b, requires_grad=False)
+
+            Proj_b = torch.rand(self.num_features, d)
+            Proj_b = torch.div(Proj_b,torch.norm(Proj_b, p=2.,dim=0))
+            self.Proj_b = nn.Parameter(Proj_b, requires_grad=False)
+
+        self.running_mean=torch.ones(self.num_features) / self.num_features
+        self.running_var=torch.zeros(self.num_features)
+            
+    def forward(self, input, basis_weights):
+        
+        if self.affine:
+            theta_off_w = torch.matmul(self.Proj_w, basis_weights)
+            theta_off_w = theta_off_w.squeeze()
+            Theta_w = self.theta_0_w + theta_off_w
+            
+            theta_off_b = torch.matmul(self.Proj_b, basis_weights)
+            theta_off_b = theta_off_b.squeeze()
+            Theta_b = self.theta_0_b + theta_off_b
+        else:
+            Theta_w, Theta_b = 1, 0
+        
+        return F.batch_norm(input, self.running_mean, self.running_var, Theta_w, Theta_b,
+            self.training, self.momentum, self.eps)
