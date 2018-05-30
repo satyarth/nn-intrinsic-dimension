@@ -14,7 +14,7 @@ from modules import *
 
 def train_network(network, optimizer, criterion, train_data, test_data=None, epoches=50, flatten = False):
     
-    train_loss, val_acc = list(), list()
+    train_loss, val_acc, train_acc = list(), list(), list()
     
     CUDA_ = torch.cuda.is_available()
     if CUDA_:
@@ -68,22 +68,46 @@ def train_network(network, optimizer, criterion, train_data, test_data=None, epo
                     break
             score = np.mean(b_score)
             val_acc.append(score)
+
+            th=0
+            b_score = list()
+            for X_batch_, y_batch_ in train_data:
+                
+                if flatten:
+                    X_batch_ = X_batch.view(X_batch_.size(0),-1)
+                    
+                if CUDA_:
+                    pred_ = network(Variable(X_batch_).cuda())
+                    pred_ = pred_.cpu()
+                else:
+                    pred_ = network(Variable(X_batch_))
+                target_ = pred_.max(1)[1].data.numpy()
+                y_pred = y_batch_.numpy()
+                b_score.append((target_ == y_pred).mean())
+                th+=1
+                if th>500:
+                    break
+            score = np.mean(b_score)
+            train_acc.append(score)
             
             #print results
-            plt.clf()
+            # plt.clf()
 
-            fig, ax = plt.subplots(1,2,figsize=(15,7))
+            # fig, ax = plt.subplots(1,2,figsize=(15,7))
 
-            ax[0].plot(train_loss[100:])
-            ax[0].set_title('Train loss')
+            # ax[0].plot(train_loss[100:])
+            # ax[0].set_title('Train loss')
 
-            ax[1].plot(val_acc)
-            ax[1].set_title('Val acc')
+            # ax[1].plot(val_acc)
+            # ax[1].set_title('Val acc')
 
-            display.clear_output(wait=True)
-            display.display(plt.gcf())
+            # display.clear_output(wait=True)
+            # display.display(plt.gcf())
+
+    output = {"test_acc_history": val_acc,
+              "train_acc_history": train_acc}
             
-    return network
+    return network, output
 
 
 def test_network(trained_network, test_data, flatten=False):
@@ -114,35 +138,22 @@ def test_network(trained_network, test_data, flatten=False):
 
 def Dgrid_train(network_class, network_args, optimizer_class, optimizer_args,
                 criterion, train_data, test_data, epoches=50, flatten = False,
-                d_range=None, verbose=True):
+                d=100, verbose=True):
     
-    d_scores_list = list()
+    results = {}
     
-    for i, each_d in tqdm(enumerate(d_range)):
-        
-        network_args['d'] = int(each_d)
-        network_ = network_class(**network_args)
-        
-        network_grads = [param for param in network_.parameters() if param.requires_grad]
-        opt_ = optimizer_class(params = network_grads, **optimizer_args)
-        
-        #train network
-        d_trained = train_network(network_, optimizer=opt_, criterion=criterion,
-                                  train_data=train_data, test_data=None, epoches=epoches, flatten=flatten)
-        
-        #test network
-        d_score = test_network(trained_network=d_trained, test_data=test_data, flatten=flatten)
-        d_scores_list.append(d_score)
-        
-        if verbose:
-            #print results
-            plt.clf()
-
-            #fig, ax = plt.subplots(1,2,figsize=(15,7))
-
-            plt.bar(d_range[:i+1], d_scores_list)
-
-            display.clear_output(wait=True)
-            display.display(plt.gcf())
-            
-    return d_range, d_scores_list
+    network_args['d'] = int(d)
+    network_ = network_class(**network_args)
+    
+    network_grads = [param for param in network_.parameters() if param.requires_grad]
+    opt_ = optimizer_class(params = network_grads, **optimizer_args)
+    
+    #train network
+    d_trained, output = train_network(network_, optimizer=opt_, criterion=criterion,
+                              train_data=train_data, test_data=test_data, epoches=epoches, flatten=flatten)
+    
+    output['d'] = d
+    #test network
+    d_score = test_network(trained_network=d_trained, test_data=test_data, flatten=flatten)
+                
+    return output
