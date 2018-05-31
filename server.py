@@ -36,8 +36,8 @@ def accept_results():
 
 if __name__ == "__main__":
 	dispatcher = Dispatcher()
-	dispatcher.init_state()
-	for i in [50*i for i in range(1, 35)]*4:
-		dispatcher.add_job(i)
+#	dispatcher.init_state()
+#	for i in [50*i for i in range(1, 30)]*4:
+#		dispatcher.add_job(i)
 
-	app.run(debug=True, host=0.0.0.0)
+	app.run(debug=True, host='0.0.0.0')
