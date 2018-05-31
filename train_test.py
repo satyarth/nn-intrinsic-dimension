@@ -24,6 +24,7 @@ def train_network(network, optimizer, criterion, train_data, test_data=None, epo
         print('Training with cuda')
     
     for epoch in range(epoches):
+        print("Epoch", epoch)
         network.train(True)
         for X_batch, y_batch in train_data:
             if flatten:
