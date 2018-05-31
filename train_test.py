@@ -9,6 +9,10 @@ from copy import deepcopy
 
 from modules import *
 
+np.random.seed(123)
+torch.manual_seed(123)
+random.seed(123)
+torch.cuda.manual_seed_all(123)
 
 def train_network(network, optimizer, criterion, train_data, test_data=None, epoches=50, flatten = False):
     
