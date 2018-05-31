@@ -31,7 +31,9 @@ class FC_RP(nn.Module):
         self.basis_weights = nn.Parameter(torch.zeros(d, 1))
         
         self.h1 = LinearRP(f_in, h1, d)
+        self.relu1 = nn.ReLU(inplace=True)
         self.h2 = LinearRP(h1, h2, d)
+        self.relu2 = nn.ReLU(inplace=True)
         self.output = LinearRP(h2, f_out, d)
         
         self.flat = Flatten()
@@ -40,11 +42,10 @@ class FC_RP(nn.Module):
     def forward(self, x):
         #x = self.flat(x)
         x = self.h1(x, self.basis_weights)
-        x = F.relu(x)
+        x = self.relu1(x)
         x = self.h2(x, self.basis_weights)
-        x = F.relu(x)
+        x = self.relu2(x)
         x = self.output(x, self.basis_weights)
-        x = F.relu(x)
         return x
 
 class ConvRP(nn.Module):
