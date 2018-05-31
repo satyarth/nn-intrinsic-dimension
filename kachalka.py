@@ -20,7 +20,7 @@ te_data = MNIST(root='./data', train=False, transform=transforms.ToTensor(), dow
 train_data = torch.utils.data.DataLoader(dataset=tr_data, batch_size=64, shuffle=True)
 test_data = torch.utils.data.DataLoader(dataset=te_data, batch_size=64, shuffle=True)
 
-base_url = "http://0.0.0.0:5000/"
+base_url = "http://10.30.103.213:5000/"
 
 model_rp = ConvRP
 opt = torch.optim.Adam
@@ -41,7 +41,7 @@ while True:
                             criterion=criterion, 
                             train_data=train_data, 
                             test_data=test_data, 
-                            epoches=3
+                            epoches=5
                                  , 
                             flatten = False,
                             d=params['d'], 
