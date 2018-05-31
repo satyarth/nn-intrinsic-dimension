@@ -52,7 +52,7 @@ while True:
                             criterion=criterion, 
                             train_data=train_data, 
                             test_data=test_data, 
-                            epoches=30,
+                            epoches=20,
                             flatten = True,
                             d=params['d'], 
                             verbose=True)
