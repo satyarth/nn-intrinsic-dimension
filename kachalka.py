@@ -12,7 +12,7 @@ import torchvision.transforms as transforms
 
 from dispatcher import Dispatcher
 from train_test import Dgrid_train
-from models import ConvRP
+from models import ConvRP, FC_RP
 
 tr_data = MNIST(root='./data', train=True, transform=transforms.ToTensor(), download=True)
 te_data = MNIST(root='./data', train=False, transform=transforms.ToTensor(), download=True)
@@ -27,23 +27,33 @@ opt = torch.optim.Adam
 criterion = nn.CrossEntropyLoss()
 
 while True:
-    r = requests.get(base_url + "get_job")
+    try:
+        r = requests.get(base_url + "get_job")
+        
+    except requests.exceptions.ConnectionError:
+        print("Can't reach server")
+        sleep(5)
+        continue
+        
     response = loads(r.content)
     if response['status']:
 
         job_id = response['job_id']
         params = response['params']
 
-        output = Dgrid_train(network_class=ConvRP, 
-                            network_args={'d':None}, 
-                            optimizer_class=opt, 
+        output = Dgrid_train(network_class=FC_RP, 
+                            network_args={'d':None,
+                                          'f_in': 28*28,
+                                          'h1': 200,
+                                          'h2': 200,
+                                          'f_out': 10}, 
+                            optimizer_class=opt,
                             optimizer_args={'lr':0.001},
                             criterion=criterion, 
                             train_data=train_data, 
                             test_data=test_data, 
-                            epoches=5
-                                 , 
-                            flatten = False,
+                            epoches=30,
+                            flatten = True,
                             d=params['d'], 
                             verbose=True)
         
