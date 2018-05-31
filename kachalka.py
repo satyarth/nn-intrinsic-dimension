@@ -2,19 +2,54 @@ import requests
 from json import dumps, loads
 from time import sleep
 
+import torch
+from torch import nn as nn
+from torch.nn import functional as F
+from torch.autograd import Variable
+
+from torchvision.datasets import MNIST
+import torchvision.transforms as transforms
+
+from dispatcher import Dispatcher
+from train_test import Dgrid_train
+from models import ConvRP
+
+tr_data = MNIST(root='./data', train=True, transform=transforms.ToTensor(), download=True)
+te_data = MNIST(root='./data', train=False, transform=transforms.ToTensor(), download=True)
+
+train_data = torch.utils.data.DataLoader(dataset=tr_data, batch_size=64, shuffle=True)
+test_data = torch.utils.data.DataLoader(dataset=te_data, batch_size=64, shuffle=True)
+
 base_url = "http://0.0.0.0:5000/"
 
+model_rp = ConvRP
+opt = torch.optim.Adam
+criterion = nn.CrossEntropyLoss()
 
 while True:
-	r = requests.get(base_url + "get_job")
-	response = loads(r.content)
-	if response['status']:
-		print("damn son")
-		job_id = response['job_id']
-		output = {"job_id": job_id,
-				  "ayy": "lmao"}
+    r = requests.get(base_url + "get_job")
+    response = loads(r.content)
+    if response['status']:
 
-		requests.post(base_url + "post_results", data={'output': dumps(output)})
+        job_id = response['job_id']
+        params = response['params']
 
-	else:
-		sleep(5)
+        output = Dgrid_train(network_class=ConvRP, 
+                            network_args={'d':None}, 
+                            optimizer_class=opt, 
+                            optimizer_args={'lr':0.001},
+                            criterion=criterion, 
+                            train_data=train_data, 
+                            test_data=test_data, 
+                            epoches=3
+                                 , 
+                            flatten = False,
+                            d=params['d'], 
+                            verbose=True)
+        
+        output["job_id"] = job_id
+
+        requests.post(base_url + "post_results", data={'output': dumps(output)})
+
+    else:
+        sleep(5)

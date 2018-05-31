@@ -37,7 +37,7 @@ def accept_results():
 if __name__ == "__main__":
 	dispatcher = Dispatcher()
 	dispatcher.init_state()
-	for i in range(5):
+	for i in [100, 200, 300, 400]:
 		dispatcher.add_job(i)
 
 	app.run(debug=True)
