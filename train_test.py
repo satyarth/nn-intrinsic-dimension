@@ -15,6 +15,11 @@ from modules import *
 def train_network(network, optimizer, criterion, train_data, test_data=None, epoches=50, flatten = False):
     
     train_loss, val_acc, train_acc = list(), list(), list()
+    try:
+        assert network.d == len([param for param in network.parameters() if param.requires_grad][0]), '#parameters != d'
+        assert network.d == len(optimizer.param_groups[0]['params'][0]), '#params in optimizer != d'
+    except:
+        print('d is not explicitly specified')
     
     CUDA_ = torch.cuda.is_available()
     if CUDA_:
@@ -41,19 +46,25 @@ def train_network(network, optimizer, criterion, train_data, test_data=None, epo
             optimizer.step()
             
             if CUDA_:
-                train_loss.append(loss.cpu().data.item())
+                try:
+                    train_loss.append(loss.cpu().data.item())
+                except:
+                    train_loss.append(loss.cpu().data.numpy()[0])
             else:
-                train_loss.append(loss.data.item())
-            
+                try:
+                    train_loss.append(loss.data.item())
+                except:
+                    train_loss.append(loss.data.numpy()[0])
+                    
         if not test_data is None:
-            network.train(False) # disable dropout / use averages for batch_norm
+            network.train(False)
             th=0
             b_score = list()
-            print('Validating')
+            #print('Validating')
             for X_batch_, y_batch_ in test_data:
                 
                 if flatten:
-                    X_batch_ = X_batch.view(X_batch_.size(0),-1)
+                    X_batch_ = X_batch_.view(X_batch_.size(0),-1)
                     
                 if CUDA_:
                     pred_ = network(Variable(X_batch_).cuda())
@@ -64,17 +75,20 @@ def train_network(network, optimizer, criterion, train_data, test_data=None, epo
                 y_pred = y_batch_.numpy()
                 b_score.append((target_ == y_pred).mean())
                 th+=1
-                if th>500:
+                if th>np.inf:
                     break
             score = np.mean(b_score)
             val_acc.append(score)
-
+            
+            if epoch%4==0:
+                print(str(epoch)+':'+str(score), end=' ')
+                
             th=0
             b_score = list()
             for X_batch_, y_batch_ in train_data:
                 
                 if flatten:
-                    X_batch_ = X_batch.view(X_batch_.size(0),-1)
+                    X_batch_ = X_batch_.view(X_batch_.size(0),-1)
                     
                 if CUDA_:
                     pred_ = network(Variable(X_batch_).cuda())
@@ -85,10 +99,11 @@ def train_network(network, optimizer, criterion, train_data, test_data=None, epo
                 y_pred = y_batch_.numpy()
                 b_score.append((target_ == y_pred).mean())
                 th+=1
-                if th>500:
+                if th>np.inf:
                     break
             score = np.mean(b_score)
             train_acc.append(score)
+            
             
             #print results
             # plt.clf()
@@ -105,7 +120,8 @@ def train_network(network, optimizer, criterion, train_data, test_data=None, epo
             # display.display(plt.gcf())
 
     output = {"test_acc_history": val_acc,
-              "train_acc_history": train_acc}
+              "train_acc_history": train_acc,
+              "train_loss":train_loss}
             
     return network, output
 
