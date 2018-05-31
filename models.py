@@ -171,8 +171,4 @@ class LeNet(nn.Module):
         x=self.relu3(self.lin1(x.view(x.size(0),-1)))
         x=self.lin2(x)
         
-<<<<<<< HEAD
         return x
-=======
-        return x
->>>>>>> 2b91aac90ff0adf83ff444ad162c38d7149da2fd
