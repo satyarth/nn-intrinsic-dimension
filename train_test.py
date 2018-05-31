@@ -6,6 +6,7 @@ import numpy as np
 
 from IPython import display
 from copy import deepcopy
+import random
 
 from modules import *
 
