@@ -29,6 +29,7 @@ class FC_RP(nn.Module):
     def __init__(self, f_in, h1, h2, f_out, d):
         super(FC_RP, self).__init__()
         
+        self.d = d
         self.basis_weights = nn.Parameter(torch.zeros(d, 1))
         
         self.h1 = LinearRP(f_in, h1, d)
