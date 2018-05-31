@@ -3,11 +3,9 @@ from torch import nn as nn
 from torch.autograd import Variable
 
 import numpy as np
-from tqdm import tqdm, tqdm_notebook
 
 from IPython import display
 from copy import deepcopy
-import matplotlib.pyplot as plt
 
 from modules import *
 
@@ -25,7 +23,7 @@ def train_network(network, optimizer, criterion, train_data, test_data=None, epo
     if CUDA_:
         print('Training with cuda')
     
-    for epoch in tqdm_notebook(range(epoches)):
+    for epoch in range(epoches):
         network.train(True)
         for X_batch, y_batch in train_data:
             if flatten:
@@ -159,8 +157,12 @@ def Dgrid_train(network_class, network_args, optimizer_class, optimizer_args,
     results = {}
     
     network_args['d'] = int(d)
-    network_ = network_class(**network_args)
     
+    if torch.cuda.is_available():
+        network_ = network_class(**network_args).cuda()
+    else:
+        network_ = network_class(**network_args)
+        
     network_grads = [param for param in network_.parameters() if param.requires_grad]
     opt_ = optimizer_class(params = network_grads, **optimizer_args)
     
