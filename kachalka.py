@@ -27,7 +27,14 @@ opt = torch.optim.Adam
 criterion = nn.CrossEntropyLoss()
 
 while True:
-    r = requests.get(base_url + "get_job")
+    try:
+        r = requests.get(base_url + "get_job")
+        
+    except requests.exceptions.ConnectionError:
+        print("Can't reach server")
+        sleep(5)
+        continue
+        
     response = loads(r.content)
     if response['status']:
 
