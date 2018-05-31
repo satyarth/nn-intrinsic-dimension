@@ -41,10 +41,8 @@ class FC_RP(nn.Module):
         
     def forward(self, x):
         #x = self.flat(x)
-        x = self.h1(x, self.basis_weights)
-        x = self.relu1(x)
-        x = self.h2(x, self.basis_weights)
-        x = self.relu2(x)
+        x = self.relu1(self.h1(x, self.basis_weights)
+        x = self.relu2(self.h2(x, self.basis_weights))
         x = self.output(x, self.basis_weights)
         return x
 
