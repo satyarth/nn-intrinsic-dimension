@@ -39,7 +39,7 @@ while True:
                                           'f_in': 28*28,
                                           'h1': 200,
                                           'h2': 200,
-                                          'out': 10}, 
+                                          'f_out': 10}, 
                             optimizer_class=opt,
                             optimizer_args={'lr':0.001},
                             criterion=criterion, 
