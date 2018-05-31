@@ -135,7 +135,7 @@ def test_network(trained_network, test_data, flatten=False):
     for X_batch_, y_batch_ in test_data:
         
         if flatten:
-            X_batch_ = X_batch.view(X_batch_.size(0),-1)
+            X_batch_ = X_batch_.view(X_batch_.size(0),-1)
 
         if CUDA_:
             pred_ = trained_network(Variable(X_batch_).cuda())
