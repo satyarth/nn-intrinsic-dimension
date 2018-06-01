@@ -12,7 +12,7 @@ import torchvision.transforms as transforms
 
 from dispatcher import Dispatcher
 from train_test import Dgrid_train
-from models import ConvRP, FC_RP
+from models import ConvRP, FC_RP, ConvNetRP
 
 tr_data = MNIST(root='./data', train=True, transform=transforms.ToTensor(), download=True)
 te_data = MNIST(root='./data', train=False, transform=transforms.ToTensor(), download=True)
