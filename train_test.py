@@ -123,9 +123,9 @@ def train_network(network, optimizer, criterion, train_data, test_data=None, epo
             # display.clear_output(wait=True)
             # display.display(plt.gcf())
 
-    output = {"test_acc_history": val_acc,
-              "train_acc_history": train_acc,
-              "train_loss":train_loss}
+    output = {"test_acc_history": [float(gk) for gk in val_acc],
+              "train_acc_history": [float(gk) for gk in train_acc],
+              "train_loss": [float(gk) for gk in train_loss]}
             
     return network, output
 
