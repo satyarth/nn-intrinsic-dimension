@@ -41,19 +41,15 @@ while True:
         job_id = response['job_id']
         params = response['params']
 
-        output = Dgrid_train(network_class=FC_RP, 
-                            network_args={'d':None,
-                                          'f_in': 28*28,
-                                          'h1': 200,
-                                          'h2': 200,
-                                          'f_out': 10}, 
+        output = Dgrid_train(network_class=ConvNetRP, 
+                            network_args={'d':None}, 
                             optimizer_class=opt,
-                            optimizer_args={'lr':0.001},
+                            optimizer_args={'lr':0.001,'weight_decay':1e-3},
                             criterion=criterion, 
                             train_data=train_data, 
                             test_data=test_data, 
-                            epoches=20,
-                            flatten = True,
+                            epoches=60,
+                            flatten = False,
                             d=params['d'], 
                             verbose=True)
         
